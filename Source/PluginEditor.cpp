@@ -22,6 +22,10 @@ PGQ_VSTAudioProcessorEditor::PGQ_VSTAudioProcessorEditor (PGQ_VSTAudioProcessor&
     addAndMakeVisible(smoothnessBand);
     addAndMakeVisible(gainBand);
     addAndMakeVisible(bandSelector);
+    
+    // add reset button
+    addAndMakeVisible(resetButton);
+    configure_resetButton();
 
 //    // Start with a flat EQ.
 //    gains.fill(0.0f);
@@ -81,12 +85,32 @@ void PGQ_VSTAudioProcessorEditor::resized()
 
     smoothnessBand.setBounds(left.reduced(10));
     gainBand.setBounds(right.reduced(10));
+    
+//    // Right: gain control + reset button.
+//    auto rightArea = right.reduced(10);
+//
+//    auto resetArea = rightArea.removeFromBottom(34);
+//    
+//    gainBand.setBounds(right.reduced(10));
+//    resetButton.setBounds(resetArea);
 
-    auto selectorBounds = bottom;
-    selectorBounds.setX(area.getX());
-    selectorBounds.setWidth(area.getWidth());
+//    auto selectorBounds = bottom;
+//    selectorBounds.setX(area.getX());
+//    selectorBounds.setWidth(area.getWidth());
+//
+//    bandSelector.setBounds(selectorBounds.reduced(0, 10));
+    
+    // 2. Chop off 10px from the left (this creates your empty margin)
+    auto left_margin = bottom.removeFromLeft (60);
 
-    bandSelector.setBounds(selectorBounds.reduced(0, 10));
+    // 3. Chop off 10px from the right (this creates the reset_area)
+    auto resetArea = bottom.removeFromRight(60).reduced(10, 10);
+
+    // 4. Whatever is left in the middle becomes your selector_area
+    auto selector_area = bottom;
+    
+    bandSelector.setBounds(selector_area.reduced(0, 10));
+    resetButton.setBounds(resetArea);
 }
 
 //==============================================================================
@@ -203,6 +227,13 @@ void PGQ_VSTAudioProcessorEditor::setupCallbacks()
         {
             setInteractionMode(
                 EQDrawingArea::InteractionMode::drawing);
+        };
+    
+    // Reset EQ
+    resetButton.onClick =
+        [this]()
+        {
+            resetEQ();
         };
 }
 
@@ -432,4 +463,50 @@ void PGQ_VSTAudioProcessorEditor::changeListenerCallback(
     gainsAtGestureStart = gains;
 
     eqDrawingArea.setEQState(state);
+}
+
+//==============================================================================
+// Reset
+//==============================================================================
+
+void PGQ_VSTAudioProcessorEditor::resetEQ()
+{
+    // Reset the EQ curve to flat.
+    gains.fill(0.0f);
+
+    // Any subsequent smoothness gesture should start
+    // from the newly reset curve.
+    gainsAtGestureStart = gains;
+
+    // Reset the starting point used by the gain gesture.
+    gainAtGestureStart = 0.0f;
+
+    // Update the visual representation.
+    eqDrawingArea.setGains(gains);
+
+    // Update the DSP.
+    updateDSP();
+}
+
+void PGQ_VSTAudioProcessorEditor::configure_resetButton(){
+    // configure reset button
+    resetButton.setButtonText("---");
+    resetButton.setTooltip("Reset EQ");
+    // set colors
+    const auto borderColour =
+        VisualStyle::getStateColor(
+                                     colourSet,
+                                     false,
+                                   true).withAlpha(0.35f);
+    // make visuals of button
+    resetButton.setColour(
+        juce::TextButton::buttonColourId,
+        VisualStyle::panelBackground);
+    resetButton.setColour(
+        juce::TextButton::textColourOffId,
+                          borderColour);
+    resetButton.setColour(
+        juce::TextButton::textColourOnId,
+                          borderColour);
+    resetButton.setColour(juce::ComboBox::outlineColourId, borderColour);
 }

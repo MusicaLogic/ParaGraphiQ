@@ -66,6 +66,11 @@ private:
     };
 
     BandSelector bandSelector;
+    
+    juce::TextButton resetButton;
+    void configure_resetButton();
+    const VisualStyle::ColorSet& colourSet = VisualStyle::Palette::green;
+    
 
 
     //==============================================================
@@ -97,6 +102,8 @@ private:
         float amount);
 
     void handleGainGesture(float amount);
+    
+    void resetEQ();
 
     // DSP bridge
     void updateDSP();
