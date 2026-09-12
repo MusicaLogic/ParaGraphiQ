@@ -739,12 +739,12 @@ void EQDrawingArea::drawSpectrum(
     drawSpectrumLines(
         g,
         inputSpectrum,
-        VisualStyle::Palette::yellow.highlight);
+        VisualStyle::Palette::blue.highlight);
 
     drawSpectrumLines(
         g,
         outputSpectrum,
-        VisualStyle::Palette::blue.highlight);
+        VisualStyle::Palette::yellow.highlight);
 }
 
 void EQDrawingArea::drawSpectrumLines(
