@@ -4,7 +4,9 @@
 
 It provides **31 frequency bands** and a visual representation of the EQ response across **32 frequency-band positions**, allowing the equalization curve to be shaped directly through the graph.
 
-![ParaGraphiQ demo](images/paragraphiq-demo.gif)
+<p align="center">
+  <img src="images/paragraphiq-demo.gif" width="700">
+</p>
 
 ## Why ParaGraphiQ?
 
