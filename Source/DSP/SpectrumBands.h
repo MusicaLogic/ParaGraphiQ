@@ -16,7 +16,7 @@
 class SpectrumBands
 {
 public:
-    static constexpr int numBands = 64;
+    static constexpr int numBands = 32;
 
     struct Band
     {

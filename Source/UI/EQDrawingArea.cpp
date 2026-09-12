@@ -23,7 +23,7 @@ EQDrawingArea::EQDrawingArea()
     inputSpectrum.fill(spectrumMinDB);
     outputSpectrum.fill(spectrumMinDB);
 
-    startTimerHz(30);
+    startTimerHz(15);
 }
 
 

@@ -43,12 +43,12 @@ public:
     // Configuration
     // ================================================================
 
-    static constexpr int fftOrder = 10;
+    static constexpr int fftOrder = 12;
     static constexpr int fftSize = 1 << fftOrder;
 
     static constexpr int hopSize = fftSize / 2;
 
-    static constexpr int numSpectrumBands = 64;
+    static constexpr int numSpectrumBands = 32;
 
     static constexpr float minFrequency = 20.0f;
     static constexpr float maxFrequency = 20000.0f;
@@ -112,6 +112,8 @@ public:
     static float getBandHighFrequency(
         int band) noexcept;
 
+    // debug
+    void debugPrintBands() const;
 
 private:
 
@@ -162,8 +164,7 @@ private:
         float highFrequency;
         float centreFrequency;
 
-        int firstFFTBin;
-        int lastFFTBin;
+        float fftPosition;
     };
 
     std::array<Band, numSpectrumBands> bands {};
@@ -185,8 +186,8 @@ private:
     // Smoothing
     // ================================================================
 
-    static constexpr float attackTimeSeconds = 0.015f;
-    static constexpr float releaseTimeSeconds = 0.180f;
+    static constexpr float attackTimeSeconds = 0.1f;
+    static constexpr float releaseTimeSeconds = 0.5f;
 
     float attackCoefficient = 0.0f;
     float releaseCoefficient = 0.0f;

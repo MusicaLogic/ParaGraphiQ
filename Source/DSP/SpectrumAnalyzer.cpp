@@ -164,6 +164,15 @@ void SpectrumAnalyzer::performFFT() noexcept
 
 void SpectrumAnalyzer::calculateSpectrum() noexcept
 {
+    // ================================================================
+    // Convert the FFT magnitude spectrum into dB.
+    //
+    // fftData contains positive-frequency FFT magnitudes.
+    // ================================================================
+
+    constexpr float epsilon = 1.0e-10f;
+
+
     for (int bandIndex = 0;
          bandIndex < numSpectrumBands;
          ++bandIndex)
@@ -173,83 +182,76 @@ void SpectrumAnalyzer::calculateSpectrum() noexcept
 
 
         // ------------------------------------------------------------
-        // Protect against pathological cases where a band contains
-        // no FFT bins.
+        // Continuous FFT-bin position corresponding to the band's
+        // logarithmic centre frequency.
         // ------------------------------------------------------------
 
-        if (band.lastFFTBin < band.firstFFTBin)
-        {
-            targetSpectrum[
-                static_cast<size_t>(bandIndex)] =
-                minDB;
-
-            continue;
-        }
+        const float position =
+            juce::jlimit(
+                0.0f,
+                static_cast<float>(fftSize / 2 - 1),
+                band.fftPosition);
 
 
-        double power = 0.0;
+        const int lowerBin =
+            static_cast<int>(
+                std::floor(position));
 
-        int numberOfBins = 0;
+        const int upperBin =
+            std::min(
+                lowerBin + 1,
+                fftSize / 2 - 1);
+
+
+        const float fraction =
+            position -
+            static_cast<float>(lowerBin);
 
 
         // ------------------------------------------------------------
-        // Accumulate power.
+        // FFT magnitude interpolation.
         // ------------------------------------------------------------
 
-        for (int bin = band.firstFFTBin;
-             bin <= band.lastFFTBin;
-             ++bin)
-        {
-            if (bin < 0 || bin >= fftSize / 2)
-                continue;
+        const float lowerMagnitude =
+            fftData[
+                static_cast<size_t>(lowerBin)];
 
 
-            const float magnitude =
-                fftData[static_cast<size_t>(bin)];
+        const float upperMagnitude =
+            fftData[
+                static_cast<size_t>(upperBin)];
 
 
-            // JUCE's frequency-only FFT returns magnitude.
-            //
-            // Normalize by FFT size.
-            //
-            // Positive-frequency bins are multiplied by 2 to account
-            // for the discarded negative-frequency half.
-            //
-            // The exact absolute calibration is not intended to be
-            // a precision SPL meter; it gives us a useful dBFS-like
-            // spectrum for visualization.
-
-            float normalizedMagnitude =
-                magnitude /
-                static_cast<float>(fftSize);
-
-            if (bin != 0)
-                normalizedMagnitude *= 2.0f;
+        const float magnitude =
+            lowerMagnitude +
+            fraction *
+            (upperMagnitude - lowerMagnitude);
 
 
-            power +=
-                static_cast<double>(
-                    normalizedMagnitude) *
-                static_cast<double>(
-                    normalizedMagnitude);
+        // ------------------------------------------------------------
+        // Normalize FFT magnitude.
+        // ------------------------------------------------------------
 
-            ++numberOfBins;
-        }
+        float normalizedMagnitude =
+            magnitude /
+            static_cast<float>(fftSize);
 
 
-        if (numberOfBins > 0)
-        {
-            // Average the power represented by the band.
-            power /= static_cast<double>(numberOfBins);
-        }
+        // Account for the discarded negative-frequency half.
+        if (lowerBin != 0)
+            normalizedMagnitude *= 2.0f;
 
+
+        // ------------------------------------------------------------
+        // Convert to dB.
+        // ------------------------------------------------------------
 
         const float levelDB =
-            power > 1.0e-20
-                ? 10.0f *
-                  std::log10(
-                      static_cast<float>(power))
-                : minDB;
+            20.0f *
+            std::log10(
+                std::max(
+                    normalizedMagnitude,
+                    epsilon));
 
 
         targetSpectrum[
@@ -262,7 +264,7 @@ void SpectrumAnalyzer::calculateSpectrum() noexcept
 
 
     // ================================================================
-    // Attack/release smoothing
+    // Attack / release smoothing
     // ================================================================
 
     for (int i = 0;
@@ -297,7 +299,6 @@ void SpectrumAnalyzer::calculateSpectrum() noexcept
         }
     }
 }
-
 
 //==============================================================================
 // Frequency bands
@@ -354,20 +355,10 @@ void SpectrumAnalyzer::calculateBands()
                     tc * (maxLog - minLog)));
 
 
-        const int firstBin =
-            static_cast<int>(
-                std::ceil(
-                    frequencyToFFTBin(
-                        low,
-                        sampleRate)));
-
-
-        const int lastBin =
-            static_cast<int>(
-                std::floor(
-                    frequencyToFFTBin(
-                        high,
-                        sampleRate)));
+        const float fftPosition =
+            frequencyToFFTBin(
+                centre,
+                sampleRate);
 
 
         bands[static_cast<size_t>(i)] =
@@ -375,8 +366,7 @@ void SpectrumAnalyzer::calculateBands()
             low,
             high,
             centre,
-            firstBin,
-            lastBin
+            fftPosition
         };
     }
 }
@@ -512,4 +502,26 @@ float SpectrumAnalyzer::frequencyToFFTBin(
     return frequency *
            static_cast<float>(fftSize) /
            static_cast<float>(sampleRate);
+}
+
+// debug
+void SpectrumAnalyzer::debugPrintBands() const
+{
+    DBG("==========================================");
+    DBG("Spectrum bands");
+
+    for (int i = 0; i < numSpectrumBands; ++i)
+    {
+        const auto& band =
+            bands[static_cast<size_t>(i)];
+
+        DBG(
+            juce::String(i)
+            + ": "
+            + juce::String(band.lowFrequency, 1)
+            + " - "
+            + juce::String(band.highFrequency, 1)
+            + " Hz | position "
+            + juce::String(band.fftPosition));
+    }
 }
