@@ -4,6 +4,10 @@
 
 It provides **31 frequency bands** and a visual representation of the EQ response across **32 frequency-band positions**, allowing the equalization curve to be shaped directly through the graph.
 
+<!-- ffmpeg -i pgq_video.mov \
+  -vf "fps=7,scale=420:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" \
+  -loop 0 paragraphiq-demo.gif -->
+
 <p align="center">
   <img src="images/paragraphiq-demo.gif" width="700">
 </p>
