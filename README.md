@@ -1,14 +1,10 @@
 # ParaGraphiQ
 
-## Demo
-
-![ParaGraphiQ demo](images/paragraphiq-demo.gif)
-
 **ParaGraphiQ** is an experimental graphic EQ plugin exploring a different way of interacting with an equalizer.
 
 It provides **31 frequency bands** and a visual representation of the EQ response across **32 frequency-band positions**, allowing the equalization curve to be shaped directly through the graph.
 
-![ParaGraphiQ demonstration](media/paragraphiq-demo.gif)
+![ParaGraphiQ demo](images/paragraphiq-demo.gif)
 
 ## Why ParaGraphiQ?
 
