@@ -12,6 +12,8 @@
 #include "State/EQState.h"
 #include "DSP/EQConstants.h"
 #include "DSP/GraphicEQ.h"
+#include "DSP/SpectrumAnalyzer.h"
+#include "DSP/SpectrumDataBuffer.h"
 #include <array>
 
 //==============================================================================
@@ -66,11 +68,26 @@ public:
     GraphicEQ::Gains getGains() const;
     EQState getEQState() const;
     void setEQState(const EQState& state);
+    
+    //==============================================================================
+    SpectrumDataBuffer<
+        SpectrumAnalyzer::numSpectrumBands>&
+    getSpectrumData() noexcept
+    {
+        return spectrumData;
+    }
 
 private:
     static constexpr std::size_t NumChannels = 2;
     std::array<GraphicEQ, NumChannels> graphicEQ_;
     EQState eqState;
+    
+    SpectrumAnalyzer inputSpectrumAnalyzer;
+    SpectrumAnalyzer outputSpectrumAnalyzer;
+    
+    SpectrumDataBuffer<
+        SpectrumAnalyzer::numSpectrumBands>
+        spectrumData;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PGQ_VSTAudioProcessor)

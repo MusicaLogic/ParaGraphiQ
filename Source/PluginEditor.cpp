@@ -35,11 +35,14 @@ PGQ_VSTAudioProcessorEditor::PGQ_VSTAudioProcessorEditor (PGQ_VSTAudioProcessor&
     gains = state.gains;
     eqDrawingArea.setEQState(state);
     gainsAtGestureStart = gains;
-//    // reflect initial state on drawing area
-//    eqDrawingArea.setGains(gains);
+    // reflect initial state on drawing area
     eqDrawingArea.setSelectedBand(selectedBand);
     // make sure DSP starts the same
     updateDSP();
+    
+    // Connect the spectrum visualization to the processor.
+    eqDrawingArea.setSpectrumBuffer(
+        audioProcessor.getSpectrumData());
 
     setupCallbacks();
     setInteractionMode(interactionMode);

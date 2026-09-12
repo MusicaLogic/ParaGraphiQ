@@ -20,6 +20,10 @@
 EQDrawingArea::EQDrawingArea()
 {
     setOpaque(true);
+    inputSpectrum.fill(spectrumMinDB);
+    outputSpectrum.fill(spectrumMinDB);
+
+    startTimerHz(30);
 }
 
 
@@ -34,6 +38,8 @@ void EQDrawingArea::paint(juce::Graphics& g)
     drawFrame(g);
 
     drawAxisGuides(g);
+    
+    drawSpectrum(g);
 
     drawPlotFill(g);
     drawPlot(g);
@@ -676,4 +682,110 @@ void EQDrawingArea::notifyEQChanged()
 {
     if (onEQChanged)
         onEQChanged(state);
+}
+
+//==============================================================================
+// Spectrum plotting
+//==============================================================================
+
+void EQDrawingArea::setSpectrumBuffer(
+    SpectrumBuffer& buffer) noexcept
+{
+    spectrumBuffer = &buffer;
+}
+
+void EQDrawingArea::timerCallback()
+{
+    updateSpectrumVisualization();
+
+    repaint();
+}
+
+void EQDrawingArea::updateSpectrumVisualization()
+{
+    if (spectrumBuffer == nullptr)
+        return;
+
+    inputSpectrum =
+        spectrumBuffer->getInput();
+
+    outputSpectrum =
+        spectrumBuffer->getOutput();
+}
+
+float EQDrawingArea::spectrumDBToY(
+    float dB) const
+{
+    const auto bounds = getPlotBounds();
+
+    const float normalized =
+        juce::jmap(
+            juce::jlimit(
+                spectrumMinDB,
+                spectrumMaxDB,
+                dB),
+            spectrumMinDB,
+            spectrumMaxDB,
+            1.0f,
+            0.0f);
+
+    return bounds.getY()
+         + normalized * bounds.getHeight();
+}
+
+void EQDrawingArea::drawSpectrum(
+    juce::Graphics& g)
+{
+    drawSpectrumLines(
+        g,
+        inputSpectrum,
+        VisualStyle::Palette::yellow.highlight);
+
+    drawSpectrumLines(
+        g,
+        outputSpectrum,
+        VisualStyle::Palette::blue.highlight);
+}
+
+void EQDrawingArea::drawSpectrumLines(
+    juce::Graphics& g,
+    const Spectrum& spectrum,
+    const juce::Colour& colour)
+{
+    const auto bounds =
+        getPlotBounds();
+
+    g.setColour(
+        colour.withAlpha(0.45f));
+
+
+    for (int i = 0;
+         i < numSpectrumBands;
+         ++i)
+    {
+        const float lowFrequency =
+            SpectrumAnalyzer::getBandLowFrequency(i);
+
+        const float highFrequency =
+            SpectrumAnalyzer::getBandHighFrequency(i);
+
+
+        const float x1 =
+            frequencyToX(lowFrequency);
+
+        const float x2 =
+            frequencyToX(highFrequency);
+
+
+        const float y =
+            spectrumDBToY(
+                spectrum[
+                    static_cast<size_t>(i)]);
+
+
+        g.drawHorizontalLine(
+            juce::roundToInt(y),
+            x1,
+            x2);
+    }
 }

@@ -97,6 +97,12 @@ void PGQ_VSTAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     // initialisation that you need..
     for (auto& eq : graphicEQ_)
         eq.prepare(sampleRate, EQConstants::frequencies);
+    
+    inputSpectrumAnalyzer.setSampleRate(sampleRate);
+    outputSpectrumAnalyzer.setSampleRate(sampleRate);
+
+    inputSpectrumAnalyzer.reset();
+    outputSpectrumAnalyzer.reset();
 }
 
 void PGQ_VSTAudioProcessor::releaseResources()
@@ -158,16 +164,37 @@ void PGQ_VSTAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
             std::min(
                 static_cast<std::size_t>(buffer.getNumChannels()),
                 NumChannels);
+    
+    // TODO: analyze sum of left and right channels
+    // TODO: both in input and output
+    
+    // analyze input spectrum before processing
+    inputSpectrumAnalyzer.processBlock(
+        buffer.getReadPointer(0),
+        buffer.getNumSamples());
+    
     for (int channel = 0; channel < numChannels; ++channel)
     {
-//        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
         graphicEQ_[channel].process(
                     buffer.getWritePointer(
                         static_cast<int>(channel)),
                     numSamples);
     }
+    
+    // analyze output spectrum after processing
+    outputSpectrumAnalyzer.processBlock(
+        buffer.getReadPointer(0),
+        buffer.getNumSamples());
+    
+    // ============================================================
+    // MAKE LATEST DATA AVAILABLE TO GUI
+    // ============================================================
+
+    spectrumData.publishInput(
+        inputSpectrumAnalyzer.getSpectrum());
+
+    spectrumData.publishOutput(
+        outputSpectrumAnalyzer.getSpectrum());
 }
 
 //==============================================================================

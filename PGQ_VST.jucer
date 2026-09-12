@@ -22,6 +22,13 @@
       <GROUP id="{517AF2ED-6BC1-02A0-0327-1A5F6C44DEAD}" name="DSP">
         <FILE id="t3uIVz" name="EQConstants.h" compile="0" resource="0" file="Source/DSP/EQConstants.h"/>
         <FILE id="tjjejX" name="GraphicEQ.h" compile="0" resource="0" file="Source/DSP/GraphicEQ.h"/>
+        <FILE id="Mej8nP" name="SpectrumAnalyzer.cpp" compile="1" resource="0"
+              file="Source/DSP/SpectrumAnalyzer.cpp"/>
+        <FILE id="QYbkLY" name="SpectrumAnalyzer.h" compile="0" resource="0"
+              file="Source/DSP/SpectrumAnalyzer.h"/>
+        <FILE id="XbEXOd" name="SpectrumBands.h" compile="0" resource="0" file="Source/DSP/SpectrumBands.h"/>
+        <FILE id="crsWC6" name="SpectrumDataBuffer.h" compile="0" resource="0"
+              file="Source/DSP/SpectrumDataBuffer.h"/>
       </GROUP>
       <FILE id="t03QBl" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -44,6 +51,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -51,7 +59,7 @@
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" microphonePermissionNeeded="1">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="PGQ_VST"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="PGQ_VST"/>
@@ -70,6 +78,7 @@
         <MODULEPATH id="juce_graphics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>

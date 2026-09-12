@@ -13,8 +13,11 @@
 #include <JuceHeader.h>
 #include "../Style/VisualStyle.h"
 #include "EQBand.h"
+#include "../DSP/SpectrumAnalyzer.h"
+#include "../DSP/SpectrumDataBuffer.h"
 
-class EQDrawingArea : public juce::Component
+class EQDrawingArea : public juce::Component,
+                        private juce::Timer
 {
 public:
 
@@ -80,6 +83,22 @@ public:
     std::function<void(const EQState&)> onEQChanged;
     std::function<void(int)> onSelectedBandChanged;
     std::function<void()> onDrawingStarted;
+    
+    // ============================================================
+    // Spectrum plotting
+    // ============================================================
+    
+    static constexpr int numSpectrumBands =
+        SpectrumAnalyzer::numSpectrumBands;
+
+    using Spectrum =
+        SpectrumAnalyzer::Spectrum;
+
+    using SpectrumBuffer =
+        SpectrumDataBuffer<numSpectrumBands>;
+    
+    void setSpectrumBuffer(
+        SpectrumBuffer& buffer) noexcept;
 
 private:
 
@@ -95,9 +114,6 @@ private:
     
     static constexpr int numBands = 31;
 
-//    std::array<float, numBands> gains {};
-
-
     // ============================================================
     // Coordinate conversion
     // ============================================================
@@ -107,7 +123,6 @@ private:
 
     float gainToY(float gain) const;
     float yToGain(float y) const;
-
 
     // ============================================================
     // Interaction
@@ -151,6 +166,32 @@ private:
 
     // Appearance
     const VisualStyle::ColorSet& colourSet = VisualStyle::Palette::green;
+    
+    // ============================================================
+    // Spectrum visualization
+    // ============================================================
+
+    SpectrumBuffer* spectrumBuffer = nullptr;
+
+    Spectrum inputSpectrum {};
+    Spectrum outputSpectrum {};
+
+    void timerCallback() override;
+
+    void updateSpectrumVisualization();
+
+    void drawSpectrum(
+        juce::Graphics& g);
+
+    void drawSpectrumLines(
+        juce::Graphics& g,
+        const Spectrum& spectrum,
+        const juce::Colour& colour);
+    
+    static constexpr float spectrumMinDB = -80.0f;
+    static constexpr float spectrumMaxDB = 0.0f;
+    
+    float spectrumDBToY(float dB) const;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQDrawingArea)
